@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html>
+  <!-- <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>  -->
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      
+      // http://www.html5canvastutorials.com/
+      var ctx = document.getElementById("canvas").getContext("2d");
+
+      var rotationDegrees = 0;
+      
+      function toRadians (angle) {
+          return angle * (Math.PI / 180);
+      }
+      
+      function clientToScreen(ctx, clientCoords) {
+          var invertY = function(value) {
+              return ctx.canvas.height - value;
+          };
+          return {
+              x: ctx.canvas.width / 2.0 * clientCoords.x + ctx.canvas.width / 2.0,
+              y: invertY(ctx.canvas.height / 2.0 * clientCoords.y + ctx.canvas.height / 2.0)
+          };
+      }
+      
+      function rotate(coordsArray, angle) {
+          // http://math.stackexchange.com/questions/346672/2d-rotation-of-point-about-origin
+          var sinAngle = Math.sin(toRadians(angle));
+          var cosAngle = Math.cos(toRadians(angle));
+          var results = [];
+          coordsArray.forEach(function(coords) {
+              results.push({
+                  x: cosAngle * coords.x + (-sinAngle * coords.y),
+                  y: sinAngle * coords.x + cosAngle * coords.y
+              });
+          });
+          return results;
+      }
+      
+      function drawEquilateralTriangle(ctx, origin, outerRadius, rotationDegrees) {
+          var innerRadius = outerRadius * Math.sin(toRadians(30));
+          var sideLength = 2 * outerRadius * Math.cos(toRadians(30));
+          var coordsArray = [
+              {x: origin.x,                       y: origin.y + outerRadius},
+              {x: origin.x + (-sideLength / 2),   y: origin.y + (-innerRadius)},
+              {x: origin.x + (sideLength / 2),    y: origin.y + (-innerRadius)}
+          ];
+          coordsArray = rotate(coordsArray, rotationDegrees);
+      
+          ctx.beginPath();
+          var startScreenCoords = clientToScreen(ctx, coordsArray[0]);
+          ctx.moveTo(startScreenCoords.x, startScreenCoords.y);
+          for (var i = 1; i < coordsArray.length; i++) {
+              var screenCoords = clientToScreen(ctx, coordsArray[i]);
+              ctx.lineTo(screenCoords.x, screenCoords.y);
+          }
+          ctx.closePath();
+      
+          ctx.lineWidth = 2;
+          ctx.fillStyle = "gold";
+          ctx.fill();
+          ctx.strokeStyle = "dodgerblue";
+          ctx.stroke();
+      }
+      
+      (function draw() {
+      
+          // resize
+          ctx.canvas.width  = window.innerWidth;
+          ctx.canvas.height = window.innerHeight;
+          document.body.scrollTop = 0;
+          document.body.style.overflow = 'hidden';
+      
+          // Clear away the previous drawing.
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      
+          // origincoords x and y should be in the range of (-1 to +1)
+          var origin = {x: 0.0, y: 0.0};
+          var outerRadius = 1
+      
+          drawEquilateralTriangle(ctx, origin, outerRadius, rotationDegrees)
+      
+          rotationDegrees = (rotationDegrees + 1) % 360;
+          requestAnimationFrame(draw);
+      })();
+    </script>
+  </body>
+</html>
